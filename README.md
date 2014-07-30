@@ -1,4 +1,4 @@
-JScriptLoader
+JResourceLoader
 =============
 
-A simple script loader in javascript with the ability to store the script in localStorage
+A simple resource loader in javascript with the ability to store the script in localStorage

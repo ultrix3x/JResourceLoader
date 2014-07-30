@@ -4,20 +4,10 @@
     <title>ScriptLoader Demo 1</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="../scriptloader.js"></script>
+    <script src="../resourceloader.js"></script>
     <script>
-      window.scriptLoader
-              .loadStyle([
-                "http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.0/themes/smoothness/jquery-ui.css"
-              ])
-              .loadScript([
-                "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js",
-                "http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.0/jquery-ui.min.js"
-              ], function() {
-                jQuery(document).ready(function() {
-                  alert('Loaded');
-                });
-              });
+      window.resourceLoader.load("dummies/script1.js", {cache: true, cacheTimeout: 10});
+      console.log(window.resourceLoader.getVersion());
     </script>
   </head>
   <body>
