@@ -4,12 +4,23 @@ A simple resource loader in javascript with the ability to store the script in l
 
 ResourceLoader has a built in feature to avoid reloading itself. If a newer version if ResourceLoader is loaded then it will replace the older version.
 
+## Distribution and development
+There are two different files that can be used.
+
+### resourceloader.js
+is intended for development and testing.
+
+### resourceloader.min.js
+is intended for production usage.
+
+The minification is done by [Googles Closure compiler](http://closure-compiler.appspot.com/) in simple mode.
+
 ## ResourceLoader.load(src, options)
 
 ### Arguments
 
 #### src
-Tha argument src identifies which source file should be loaded. The url can be prefixed with either js! or css! to force the loading as a script or a style. The prefix i useful when files are loaded from repositories where the files extension isn't always .js or .css.
+The argument src identifies which source file should be loaded. The url can be prefixed with either js! or css! to force the loading as a script or a style. The prefix i useful when files are loaded from repositories where the files extension isn't always .js or .css.
 
 #### options
 In the options argument there are several arguments collected in a common object that is passed to the load function.
@@ -30,8 +41,10 @@ If the property options.test is set then this is evaluated before the script is 
 It can be an anonymous function or a simple property. If the function returns true or the property is set to true then the resource will not be loaded.
 
 ### Response
+The ResourceLoader.load returns itself which allows chaining (i.e. ResourceLoader.load().load().load(); )
 
 #### options
+Upon return (and in the options.complete callback) the options object has the following options set.
 
 ##### options.loadedFrom
 The options.loadedFrom can have the following values
