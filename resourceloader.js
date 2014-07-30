@@ -35,21 +35,48 @@
         var data = JSON.stringify({"timestamp": Date.now(), "data": value});
         win.localStorage.setItem(key, data);
       }
+    } else if(win.sessionStorage) {
+      rl.storage.get = function(key, timeout) {
+        if(timeout == undef) {
+          timeout = 3600;
+        }
+        timeout *= 1000;
+        var data = win.sessionStorage.getItem(key);
+        if(data != null) {
+          try {
+            var cached = JSON.parse(data);
+            if(cached && cached.timestamp && ((cached.timestamp + timeout) >= Date.now())) {
+              return cached.data;
+            }
+          } catch(e) {
+            return null;
+          }
+        }
+        return null;
+      }
+      rl.storage.set = function(key, value) {
+        var data = JSON.stringify({"timestamp": Date.now(), "data": value});
+        win.sessionStorage.setItem(key, data);
+      }
     }
     rl.load = function(src, options) {
       var mediaType;
       if(typeof(src) == "string") {
         options = options || {};
         options.loadCount = options.loadCount || 0;
+        options.loadedFrom = null;
         if(options.test) {
           if(options.test.call) {
-            if(options.test.call()) {
+            if(options.test.call(this, options)) {
+              options.loadedFrom = 'notLoaded/test';
               return this;
             }
           } else if(options.test) {
+            options.loadedFrom = 'notLoaded/test';
             return this;
           }
         }
+        options.rawsrc = src;
         if(src.match(/^js\!/g)) {
           src = src.substring(3, src.length);
           mediaType = 'js';
@@ -62,10 +89,11 @@
           mediaType = 'js';
         }
         if(options.cache === true) {
-          options.cache = src.replace(/[^a-zA-Z0-9]/g, '_');
+          options.cacheName = src.replace(/[^a-zA-Z0-9]/g, '_');
         } else {
-          options.cache = false;
+          options.cacheName = false;
         }
+        options.src = src;
         if(mediaType == 'js') {
           this._loadScript(src, options);
         } else if(mediaType == 'css') {
@@ -81,9 +109,10 @@
     rl._loadScript = function(src, options) {
       var data = null;
       options = options || {};
-      if(options.cache !== false) {
-        var data = this.storage.get(options.cache, options.cacheTimeout);
+      if(options.cacheName !== false) {
+        var data = this.storage.get(options.cacheName, options.cacheTimeout);
         if(data != null) {
+          options.loadedFrom = 'cache';
           return rl._appendScript(data, options);
         }
       }
@@ -95,13 +124,17 @@
       scriptTag.appendChild(doc.createTextNode(data));
       head.appendChild(scriptTag);
       options.loadCount--;
+      if(options && options.complete && options.complete.call) {
+        options.complete.call(options.self, options);
+      }
     }
     rl._loadStyle = function(src, options) {
       var data = null;
       options = options || {};
-      if(options.cache !== false) {
-        var data = this.storage.get(options.cache, options.cacheTimeout);
+      if(options.cacheName !== false) {
+        var data = this.storage.get(options.cacheName, options.cacheTimeout);
         if(data != null) {
+          options.loadedFrom = 'cache';
           return rl._appendStyle(data, options);
         }
       }
@@ -113,6 +146,9 @@
       styleTag.appendChild(doc.createTextNode(data));
       head.appendChild(styleTag);
       options.loadCount--;
+      if(options && options.complete && options.complete.call) {
+        options.complete.call(options.self, options);
+      }
     }
     rl._fetchData = function(src, options, callback) {
       options.self = this;
@@ -121,11 +157,14 @@
           "url": src,
           "dataType": "text",
           "success": function(response) {
-            if(options && (options.cache !== false)) {
-              options.self.storage.set(options.cache, response);
+            if(options && (options.cacheName !== false)) {
+              options.self.storage.set(options.cacheName, response);
             }
+            options.loadedFrom = 'web/jquery';
             if(callback && callback.call) {
               callback.call(options.self, response, options);
+            } else if (options && options.complete && options.complete.call) {
+              options.complete.call(options.self, src, options);
             }
           }
         });
@@ -134,9 +173,10 @@
         options.loadCount++;
         req.onreadystatechange = function() {
           if(req.readyState == 4) {
+            options.loadedFrom = 'web/xhr';
             var data = req.responseText;
-            if(options && (options.cache !== false)) {
-              options.self.storage.set(options.cache, data);
+            if(options && (options.cacheName !== false)) {
+              options.self.storage.set(options.cacheName, data);
             }
             if(callback && callback.call) {
               callback.call(options.self, data, options);

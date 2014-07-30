@@ -1,1 +1,3 @@
-alert('Script 1');
+var dummyObject = {
+  dummyVar: true
+}

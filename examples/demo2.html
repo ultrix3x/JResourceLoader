@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <title>Simple demo</title>
+  <script src="../resourceloader.js"></script>
+  <script>
+    var options = {
+      cache: true,
+      cacheTimeout: 7200,
+      complete: function(options) {
+        alert("Loaded "+options.src+" from "+options.loadedFrom);
+      },
+      test: function(options) {
+        if(typeof(dummyObject) != "undefined") {
+          return true;
+        }
+        return false;
+      }
+    }
+    window.resourceLoader.load("dummies/script1.js", options);
+    window.resourceLoader.load("dummies/script1.js", options);
+  </script>
+ </head>
+ <body>
+ </body>
+</html>
