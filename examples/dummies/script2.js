@@ -1,0 +1,3 @@
+var secondDummyObject = {
+  dummyVar: true
+}

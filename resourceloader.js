@@ -106,9 +106,26 @@
         options.loadCount = options.loadCount || 0;
         // Clear options.loadedFrom
         options.loadedFrom = null;
-        // If there is a test defined
+        // Is there a waitfor defined
+        if(options.waitfor) {
+          // If this waitfor is callable
+          if(options.waitfor.call) {
+            // Call this waitfor callback
+            if(options.waitfor.call(this, options) === false) {
+              // If the callback returned false then the resource shouldn't
+              // be loaded.
+              // So wait for 10 ms and try again.
+              setTimeout(function() {
+                rl.load(src, options);
+              }, 10);
+              // Return the object itself to allow chaining
+              return this;
+            }
+          }
+        }
+        // Is there a test defined
         if(options.test) {
-          // If this test ic callable
+          // If this test is callable
           if(options.test.call) {
             // Call this test callback
             if(options.test.call(this, options)) {
@@ -279,7 +296,7 @@
               callback.call(options.self, response, options);
             } else if (options && options.complete && options.complete.call) {
               // If a callback was defined in options.complete then call it
-              options.complete.call(options.self, src, options);
+              options.complete.call(options.self, options);
             }
           }
         });
@@ -304,10 +321,10 @@
             }
             if(callback && callback.call) {
               // If a callback was defined then call it
-              callback.call(options.self, response, options);
+              callback.call(options.self, data, options);
             } else if (options && options.complete && options.complete.call) {
               // If a callback was defined in options.complete then call it
-              options.complete.call(options.self, src, options);
+              options.complete.call(options.self, options);
             }
           }
         }
