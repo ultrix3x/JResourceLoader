@@ -40,8 +40,10 @@ In the options object passed to the callback there is a property called options.
 If the property options.test is set then this is evaluated before the script is loaded.
 It can be an anonymous function or a simple property. If the function returns true or the property is set to true then the resource will not be loaded.
 
-##### options.waitfor
-If the property options.waitfor is assigned a function then this is evaluated before the script is loaded.
+##### options.waitFor
+*options.waitfor* is also allowed for backward compatibility.
+
+If the property options.waitFor is assigned a function then this is evaluated before the script is loaded.
 If the assigned function returns true then the load proceeds as normal. But if the assigned function returns false then the load is interrupted and retried after 10 ms.
 This makes it possible to make sure that a feature is loaded before the load function executes.
 

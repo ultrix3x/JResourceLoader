@@ -106,6 +106,8 @@
         options.loadCount = options.loadCount || 0;
         // Clear options.loadedFrom
         options.loadedFrom = null;
+        // Fallback to allow both options.waitfor and options.waitFor
+        options.waitfor = options.waitfor || options.waitFor;
         // Is there a waitfor defined
         if(options.waitfor) {
           // If this waitfor is callable

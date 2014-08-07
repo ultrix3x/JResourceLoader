@@ -10,9 +10,9 @@
       complete: function(options) {
         alert("Loaded "+options.src+" from "+options.loadedFrom);
       },
-      waitfor: function(options) {
+      waitFor: function(options) {
         if(console && console.log) {
-          console.log("Checking if script2.js has loaded yes");
+          console.log("Checking if script2.js has loaded yet");
         }
         if(typeof(secondDummyObject) != "undefined") {
           return true;
