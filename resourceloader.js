@@ -422,7 +422,6 @@
       urlprefix += ';base64,';
       // Assign this data as the src attribute on the image object
       options.imageElement.setAttribute('src', urlprefix+data);
-      console.log(urlprefix+data);
       // If there is a options.complete callback defined...
       if(options && options.complete && options.complete.call) {
         // ...then call this
