@@ -3,9 +3,9 @@
   'use strict';
   // Define the version for this file
   var version = {
-    text: "1.0.0",
+    text: "1.1.0",
     major: 1,
-    minor: 0,
+    minor: 1,
     sub: 0
   }
   // The reloadSystem implements the ResourceManager
@@ -95,6 +95,102 @@
         win.sessionStorage.setItem(key, data);
       }
     }
+    // A flag for compatibility.
+    // If true then images may be loaded with this function
+    // If false then images are loaded by replacing the src with data-*-src
+    rl.isImageCompatible = null;
+    // Load the given image given either as an element or an string
+    rl.loadImage = function(elm, options) {
+      // Make sure the options are an object
+      options = options || {};
+      // If compatibility check hasn't been done the do that
+      if(rl.isImageCompatible === null) {
+        // If the browser doesn't support btoa then don't use loading this
+        // way
+        rl.isImageCompatible = (typeof(btoa) == 'function');
+      }
+      // Check if this is an image object
+      if((typeof(elm) == 'object') && (elm.getAttribute)) {
+        // Calculate which attribute name that should be used
+        var attrName = options.attributeName || 'resource';
+        // Check if this attribute has been handled before
+        if(elm.getAttribute('data-'+attrName+'-src-action') !== 'done') {
+          // Should this image be loaded
+          if(elm.getAttribute('data-'+attrName+'-src') !== null) {
+            if(rl.isImageCompatible) {
+              // Make sure that the assign function knowns where to use the
+              // data later on
+              options.imageElement = elm;
+              // Call the load function
+              rl.load(elm.getAttribute('data-'+attrName+'-src'), options);
+            } else {
+              elm.setAttribute('src', elm.getAttribute('data-'+attrName+'-src'));
+              // Check if there is a complete-callback available
+              if(options.complete && options.complete.call) {
+                // Populate the options with info that is not set yet
+                options.loadedFrom = 'web/direct';
+                options.rawsrc = elm.getAttribute('data-'+attrName+'-src');
+                options.src = options.rawsrc;
+                options.imageElement = elm;
+                // Call the complete-callback
+                options.complete.call(options.self, options);
+              }
+            }
+            // Mark this image as handled
+            elm.setAttribute('data-'+attrName+'-src-action', 'done');
+          }
+        }
+      } else if(typeof(elm) == 'string') {
+        // If the alements given was a string then assume it is an id
+        // Retry loading this element by its id
+        rl.loadImage(doc.getElementById(elm));
+      }
+    }
+    // The interval handler for loading images
+    rl.loadImagesInterval = null;
+    // Check all images on the page if they should be loaded this way
+    rl.loadImages = function(options) {
+      // Make sure the options are an object
+      options = options || {};
+      // Check if the interval has been started
+      if(rl.loadImagesInterval === null) {
+        // If not then start an interval
+        rl.loadImagesInterval = setInterval(function() {
+          // That loads all images on the page every 50 ms
+          rl.loadImages(options);
+        }, 50);
+      }
+      // Find all images on the page
+      var imgList = doc.getElementsByTagName('img');
+      // If there are any images to check if they can be handled
+      if(imgList.length > 0) {
+        // Loop through all images
+        for(var i = 0; i < imgList.length; i++) {
+          // Assign an imate to a variable
+          var imgObj = imgList[i];
+          // Check if there is an attribute name that should be used
+          var attrName = options.attributeName || 'resource';
+          // Does this images have the "-action" flag set?
+          if(imgObj.getAttribute('data-'+attrName+'-src-action') == null) {
+            // If not then check if there is a source to load
+            if(imgObj.getAttribute && (imgObj.getAttribute('data-'+attrName+'-src') !== null)) {
+              // Load the image
+              rl.loadImage(imgObj, options);
+            }
+          }
+        }
+      }
+    }
+    // Load the given src as a script
+    rl.stopImageLoading = function() {
+      // If there is an interval started
+      if(rl.loadImagesInterval !== null) {
+        // Then stop it
+        clearInterval(rl.loadImagesInterval);
+        // And reset the variable
+        rl.loadImagesInterval = null;
+      }
+    }
     // load is the main function which makes it possible to load a resource
     rl.load = function(src, options) {
       var mediaType;
@@ -160,9 +256,20 @@
           // The src was prefixed with css!
           src = src.substring(4, src.length);
           mediaType = 'css';
+        } else if(src.match(/^(jpe|jpeg|jpg|gif|png)\!/g)) {
+          // Save the image type for later usage
+          options.imageType = src.substring(0, src.indexOf('!') - 1);
+          // The src was prefixed with an image prefix
+          src = src.substring(src.indexOf('!'), src.length);
+          mediaType = 'image';
         } else if(src.match(/\.css$/g)) {
           // The src has a css file extension
           mediaType = 'css';
+        } else if(options.mediaType = src.match(/\.(jpe|jpeg|jpg|gif|png)$/g)) {
+          // Save the image type for later usage
+          options.mediaType = options.mediaType[0].substring(1, options.mediaType[0].length);
+          // The src has an image file extension
+          mediaType = 'image';
         } else {
           // Assume that the src should be handled as a javascript file
           mediaType = 'js';
@@ -182,6 +289,9 @@
         } else if(mediaType == 'css') {
           // If the media type is javascript (js) then call the styleloader
           this._loadStyle(src, options);
+        } else if(mediaType == 'image') {
+          // If the media type is an image then call the imageloader
+          this._loadImage(src, options);
         }
       } else if(typeof(src) == "object") {
         // If the given src was an object or array then loop through it
@@ -272,17 +382,67 @@
         options.complete.call(options.self, options);
       }
     }
+    // Load the given src as an image
+    rl._loadImage = function(src, options) {
+      var data = null;
+      // Make sure options is an object
+      options = options || {};
+      // If the cache should be used
+      if(options.cacheName !== false) {
+        // Get data from the cache
+        var data = this.storage.get(options.cacheName, options.cacheTimeout);
+        // If data isn't null
+        if(data != null) {
+          // Set the options.loadedFrom to cache to indicate that the
+          // resource was loaded from the cache
+          options.loadedFrom = 'cache';
+          // Assign the image to its proper place
+          return rl._assignImage(data, options);
+        }
+      }
+      // Call the fetchData to send a request for the url
+      rl._fetchData(src, options, rl._assignImage);
+    }
+    // Appends the data as a style node
+    rl._assignImage = function(data, options) {
+      // Assign the data loaded to the proper image element
+      options.loadCount--;
+      
+      // Create an url prefix
+      var urlprefix = 'data:';
+      // Based on the images media type
+      if(options.mediaType == 'png') {
+        urlprefix += 'image/png';
+      } else if(options.mediaType == 'gif') {
+        urlprefix += 'image/gif';
+      } else {
+        urlprefix += 'image/jpeg';
+      }
+      // and as base64
+      urlprefix += ';base64,';
+      // Assign this data as the src attribute on the image object
+      options.imageElement.setAttribute('src', urlprefix+data);
+      console.log(urlprefix+data);
+      // If there is a options.complete callback defined...
+      if(options && options.complete && options.complete.call) {
+        // ...then call this
+        options.complete.call(options.self, options);
+      }
+    }
     // FetchData gets the data from the given src
     rl._fetchData = function(src, options, callback) {
       // Make sure we know where this is
       options.self = this;
-      if(win.jQuery) {
+      // If options.mediaType is set then don't use jQuery
+      if(win.jQuery && !(options.mediaType)) {
+        // Define which dataType to use
+        var dataType = 'text';
         // If jQuery is loaded then use it
         win.jQuery.ajax({
-          // Tell jQuery where to fins the data
+          // Tell jQuery where to find the data
           "url": src,
-          // Handle the data as text
-          "dataType": "text",
+          // Handle the data as assigned to the dataType
+          "dataType": dataType,
           // Define where the code should come
           "success": function(response) {
             // If cache is used
@@ -306,7 +466,12 @@
         // If jQuery wasn't loaded then try to use XMLHttpRequest instead
         // Create a new request
         var req = new win.XMLHttpRequest();
+        // Initialize the request to use GET and where to go
+        req.open("GET", src, true);
         options.loadCount++;
+        if(options.mediaType) {
+          req.responseType = 'arraybuffer';
+        }
         // Define a callback for the XMLHttprequest call
         req.onreadystatechange = function() {
           // If the call was successful
@@ -315,7 +480,13 @@
             // resource was loaded from the web with XMLHttpRequest
             options.loadedFrom = 'web/xhr';
             // Get the response data from the request object
-            var data = req.responseText;
+            if(options.mediaType) {
+              var arr = new Uint8Array(this.response);
+              var raw = String.fromCharCode.apply(null,arr);
+              var data = btoa(raw);
+            } else {
+              var data = req.responseText;
+            }
             // If cache is used
             if(options && (options.cacheName !== false)) {
               // then update the cache
@@ -330,8 +501,6 @@
             }
           }
         }
-        // Initialize the request to use GET and where to go
-        req.open("GET", src, true);
         // Send the request
         req.send(null);
       }

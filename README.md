@@ -1,6 +1,6 @@
 # JResourceLoader
 
-A simple resource loader in javascript with the ability to store the script in localStorage or sessionStorage.
+A simple resource loader in javascript with the ability to store the scripts, stylesheets and images in localStorage or sessionStorage.
 
 ResourceLoader has a built in feature to avoid reloading itself. If a newer version if ResourceLoader is loaded then it will replace the older version.
 
@@ -20,7 +20,9 @@ The minification is done by [Googles Closure compiler](http://closure-compiler.a
 ### Arguments
 
 #### src
-The argument src identifies which source file should be loaded. The url can be prefixed with either js! or css! to force the loading as a script or a style. The prefix i useful when files are loaded from repositories where the files extension isn't always .js or .css.
+The argument src identifies which source file should be loaded. The url can be prefixed with either js! or css! to force the loading as a script or a style. The prefix is useful when files are loaded from repositories where the files extension isn't always .js or .css.
+
+If the url is prefixed with png!, gif!, jpeg!, jpe! or jpg! then the file is handled as an image.
 
 #### options
 In the options argument there are several arguments collected in a common object that is passed to the load function.
@@ -59,13 +61,53 @@ The options.loadedFrom can have the following values
   This means that the resource has been loaded with the help of jQuery.ajax
 * web/xhr
   The resource has been loaded by using XMLHttpRequest
+* web/direct
+  The resource has been loaded directly without the use of the resource loader. This is used by images for browser that is not compatible with the loading requirements used by the loader.
 * cache
   The resource was taken from the cache (i.e. localStorage or sessionStorage)
 * notloaded/test
   The resource has not been loaded since the test returned true
 
+##### options.mediaType
+This attribute is set by the system to identify which type of image that has been loaded.
+
 ## ResourceLoader.getVersion()
 Returns a string with the current version of ResourceLoader
+
+## ResourceLoader.loadImage(src, options)
+
+### Arguments
+
+#### src
+The argument src identifies which source file should be loaded. The url can be prefixed with either png!, gif!, jpeg!, jpe! or jpg! to force the loading as an image. The prefix is useful when files are loaded from repositories where the files extension isn't always available.
+
+#### options
+In the options argument there are several arguments collected in a common object that is passed to the load function.
+
+For a specification of the available options please see the function load
+
+## ResourceLoader.loadImages(options)
+This function loops through all image elements on the page and looks for the
+### Arguments
+
+#### src
+The argument src identifies which source file should be loaded. The url can be prefixed with either js! or css! to force the loading as a script or a style. The prefix i useful when files are loaded from repositories where the files extension isn't always .js or .css.
+
+#### options
+In the options argument there are several arguments collected in a common object that is passed to the load function.
+
+For a specification of the generic options please see the function load
+
+##### options.attributeName
+The attributeName defaults to 'resource'.
+
+This is used to locate images that should use the resource loader to load the content.
+
+To activate image loading set the attribute 'data-resource-src' to the url that is to be used by the image. The 'resource' part of this attributes name can be changed by this property.
+If options.attributeName is set to 'zxcv' then the loader will look for an attribute called 'data-zxcv-src'.
+
+## ResourceLoader.stopImageLoading()
+Stops the interval started by loadImages.
 
 ## Usage
 
@@ -98,3 +140,11 @@ Returns a string with the current version of ResourceLoader
  </body>
 </html>
 ```
+
+## Version history
+
+### 1.0.0
+Initial release
+
+### 1.1.0
+Added an image loader capability.
