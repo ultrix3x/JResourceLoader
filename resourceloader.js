@@ -103,6 +103,12 @@
     rl.loadImage = function(elm, options) {
       // Make sure the options are an object
       options = options || {};
+      // Create a local copy of options
+      var _options = {};
+      // Copy all properties in the old options to the new local
+      for(var i in options) {
+        _options[i] = options[i];
+      }
       // If compatibility check hasn't been done the do that
       if(rl.isImageCompatible === null) {
         // If the browser doesn't support btoa then don't use loading this
@@ -112,7 +118,7 @@
       // Check if this is an image object
       if((typeof(elm) == 'object') && (elm.getAttribute)) {
         // Calculate which attribute name that should be used
-        var attrName = options.attributeName || 'resource';
+        var attrName = _options.attributeName || 'resource';
         // Check if this attribute has been handled before
         if(elm.getAttribute('data-'+attrName+'-src-action') !== 'done') {
           // Should this image be loaded
@@ -120,20 +126,20 @@
             if(rl.isImageCompatible) {
               // Make sure that the assign function knowns where to use the
               // data later on
-              options.imageElement = elm;
+              _options.imageElement = elm;
               // Call the load function
-              rl.load(elm.getAttribute('data-'+attrName+'-src'), options);
+              rl.load(elm.getAttribute('data-'+attrName+'-src'), _options);
             } else {
               elm.setAttribute('src', elm.getAttribute('data-'+attrName+'-src'));
               // Check if there is a complete-callback available
-              if(options.complete && options.complete.call) {
+              if(_options.complete && _options.complete.call) {
                 // Populate the options with info that is not set yet
-                options.loadedFrom = 'web/direct';
-                options.rawsrc = elm.getAttribute('data-'+attrName+'-src');
-                options.src = options.rawsrc;
-                options.imageElement = elm;
+                _options.loadedFrom = 'web/direct';
+                _options.rawsrc = elm.getAttribute('data-'+attrName+'-src');
+                _options.src = options.rawsrc;
+                _options.imageElement = elm;
                 // Call the complete-callback
-                options.complete.call(options.self, options);
+                _options.complete.call(options.self, options);
               }
             }
             // Mark this image as handled
@@ -143,7 +149,7 @@
       } else if(typeof(elm) == 'string') {
         // If the alements given was a string then assume it is an id
         // Retry loading this element by its id
-        rl.loadImage(doc.getElementById(elm));
+        rl.loadImage(doc.getElementById(elm), _options);
       }
     }
     // The interval handler for loading images
