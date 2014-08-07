@@ -87,7 +87,12 @@ In the options argument there are several arguments collected in a common object
 For a specification of the available options please see the function load
 
 ## ResourceLoader.loadImages(options)
-This function loops through all image elements on the page and looks for the
+This function loops through all image elements on the page and looks for the images which the ResourceLoader can handle i.e. has the attribute `data-resource-src` set.
+
+When a image has been loaded the ResourceLoader sets the attribute `data-resource-src-action` to the value `done`.
+
+When starting the loop for the first time an interval is started every 50 ms. So when all elements has been processed it starts over and over. This makes it possible to append a new image element dynamically that can be processed with ResourceLoader.
+
 ### Arguments
 
 #### src

@@ -4,21 +4,32 @@
     <title>Cache image loading</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="http://micox.se/repository.php?lib=jquery"></script>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
     <script src="../resourceloader.js"></script>
     <script>
-      window.resourceLoader.loadImages({cache: true, complete: function(options) {
-        alert(JSON.stringify(options));
+      window.resourceLoader.loadImages({cache: true, cacheTimeout: 10, complete: function(options) {
+        // alert(JSON.stringify(options));
       }});
+      var idx = 1;
+      function AddDynamicImage() {
+        var src = jQuery('#staticTarget'+idx).attr('data-resource-src');
+        idx = (idx % 5) + 1;
+        jQuery('<img></img>').attr({
+          'data-resource-src': src
+        }).appendTo('#dynamicTarget');
+        return false;
+      }
     </script>
   </head>
   <body>
     <div>
-      <img src="dummies/blank.gif" data-resource-src="./dummies/chrome.gif" alt="Chrome" />
-      <img src="dummies/blank.gif" data-resource-src="./dummies/opera.gif" alt="Opera" />
-      <img src="dummies/blank.gif" data-resource-src="./dummies/ie.gif" alt="IE" />
-      <img src="dummies/blank.gif" data-resource-src="./dummies/firefox.gif" alt="Firefox" />
-      <img src="dummies/blank.gif" data-resource-src="./dummies/safari.gif" alt="Safari" />
+      <img id="staticTarget1" src="dummies/blank.gif" data-resource-src="./dummies/chrome.gif" alt="Chrome" />
+      <img id="staticTarget2" src="dummies/blank.gif" data-resource-src="./dummies/opera.gif" alt="Opera" />
+      <img id="staticTarget3" src="dummies/blank.gif" data-resource-src="./dummies/ie.gif" alt="IE" />
+      <img id="staticTarget4" src="dummies/blank.gif" data-resource-src="./dummies/firefox.gif" alt="Firefox" />
+      <img id="staticTarget5" src="dummies/blank.gif" data-resource-src="./dummies/safari.gif" alt="Safari" />
     </div>
+    <button onclick="return AddDynamicImage();">Add a new image below</button>
+    <div id="dynamicTarget"></div>
   </body>
 </html>
