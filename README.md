@@ -153,3 +153,6 @@ Initial release
 
 ### 1.1.0
 Added an image loader capability.
+
+### 1.2.0
+Added a jQuery plugin for resourceLoader
