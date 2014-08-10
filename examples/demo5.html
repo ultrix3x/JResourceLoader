@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cache image loading</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="../resourceloader.js"></script>
+    <script src="../jquery.resourceloader.js"></script>
+    <script>
+      jQuery(document).ready(function() {
+        jQuery('img').resourceLoader('loadImage', {
+          cache: true
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <img id="staticTarget1" src="dummies/blank.gif" data-resource-src="./dummies/chrome.gif" alt="Chrome" />
+      <img id="staticTarget2" src="dummies/blank.gif" data-resource-src="./dummies/opera.gif" alt="Opera" />
+      <img id="staticTarget3" src="dummies/blank.gif" data-resource-src="./dummies/ie.gif" alt="IE" />
+      <img id="staticTarget4" src="dummies/blank.gif" data-resource-src="./dummies/firefox.gif" alt="Firefox" />
+      <img id="staticTarget5" src="dummies/blank.gif" data-resource-src="./dummies/safari.gif" alt="Safari" />
+      <img src="dummies/blank.gif" data-resource-src="./dummies/safari.gif" alt="Safari" />
+    </div>
+  </body>
+</html>

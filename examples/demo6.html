@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cache image loading</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- load jQuery -->
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <!-- load resourceLoader -->
+    <script src="../resourceloader.js"></script>
+    <!-- load jQuery plugin for resourceLoader -->
+    <script src="../jquery.resourceloader.js"></script>
+    <script>
+      // Initiate the automatic image loading
+      jQuery.resourceLoader.loadImages({
+        // With cache turned on
+        cache: true
+      });
+      // Define an index variable used to select the image to use as source
+      // for the dynamically added image
+      var idx = 1;
+      // Add a new image dynamically
+      function AddDynamicImage() {
+        // Get the source to use for the new image
+        var src = jQuery('#staticTarget'+idx).attr('data-resource-src');
+        // Increase the image index (and make sure it stays in the range
+        // 1..5
+        idx = (idx % 5) + 1;
+        // Create a new image
+        jQuery('<img></img>').attr({
+          // Set the data-resource-src attribute to the image src to use
+          'data-resource-src': src
+        }).appendTo('#dynamicTarget'); // Append the code to the page
+        return false;
+      }
+      // Stop the automatic image loading
+      function StopImageLoading() {
+        // Call the stop image loading function in resourceLoader
+        jQuery.resourceLoader.stopImageLoading();
+        // Disable the button to stop
+        jQuery('#stopImageLoading').attr('disabled', 'disabled');
+        // Enable the button to resume
+        jQuery('#restartImageLoading').removeAttr('disabled');
+      }
+      // Restart the automatic image loading
+      function RestartImageLoading() {
+        // Call the resourceLoader to restart the automatic image loader
+        jQuery.resourceLoader.loadImages({
+          // With cache enabled
+          cache: true
+        });
+        // Enable the button to stop
+        jQuery('#stopImageLoading').removeAttr('disabled');
+        // Disable the button to resume
+        jQuery('#restartImageLoading').attr('disabled', 'disabled');
+      }
+    </script>
+  </head>
+  <body>
+    <div>
+      <!-- Define five images to load -->
+      <img id="staticTarget1" src="dummies/blank.gif" data-resource-src="./dummies/chrome.gif" alt="Chrome" />
+      <img id="staticTarget2" src="dummies/blank.gif" data-resource-src="./dummies/opera.gif" alt="Opera" />
+      <img id="staticTarget3" src="dummies/blank.gif" data-resource-src="./dummies/ie.gif" alt="IE" />
+      <img id="staticTarget4" src="dummies/blank.gif" data-resource-src="./dummies/firefox.gif" alt="Firefox" />
+      <img id="staticTarget5" src="dummies/blank.gif" data-resource-src="./dummies/safari.gif" alt="Safari" />
+      <!-- Define another image without id to check that this isn't required -->
+      <img src="dummies/blank.gif" data-resource-src="./dummies/safari.gif" alt="Safari" />
+    </div>
+    <!-- Define three buttons to manage the functions in the GUI -->
+    <button onclick="return AddDynamicImage();">Add a new image below</button>
+    <button id="stopImageLoading" onclick="return StopImageLoading();">Stop image loading</button>
+    <button id="restartImageLoading" disabled="disabled" onclick="return RestartImageLoading();">Restart image loading</button>
+    <!-- Setup an area to place the new images -->
+    <div id="dynamicTarget"></div>
+  </body>
+</html>
