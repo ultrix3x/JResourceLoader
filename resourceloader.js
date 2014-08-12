@@ -3,9 +3,9 @@
   'use strict';
   // Define the version for this file
   var version = {
-    text: "1.1.0",
+    text: "1.2.0",
     major: 1,
-    minor: 1,
+    minor: 2,
     sub: 0
   }
   // The reloadSystem implements the ResourceManager
